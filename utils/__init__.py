@@ -1,2 +1,4 @@
 from . import misc
-from . import find_distantion_id
+from . import print_data
+from . import find_hotels
+from . import set_bot_commands
