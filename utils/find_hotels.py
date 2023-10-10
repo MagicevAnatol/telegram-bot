@@ -6,7 +6,7 @@ import api
 import processing_json
 import random
 import database
-
+from datetime import datetime
 
 def find_and_show_hotels(message: Message, data: Dict) -> None:
     """
@@ -78,11 +78,20 @@ def find_and_show_hotels(message: Message, data: Dict) -> None:
                 logger.info(f'Сервер вернул ответ {get_summary.status_code}')
                 if get_summary.status_code == 200:
                     summary_info = processing_json.get_summary.hotel_info(get_summary.text)
+                    # Тут подсчет общей стоимости проживания за время проживания в отеле
+                    check_in_datetime = datetime(int(data["checkInDate"]["year"]), int(data["checkInDate"]["month"]), int(data["checkInDate"]["day"]))
+                    check_out_datetime = datetime(int(data["checkOutDate"]["year"]), int(data["checkOutDate"]["month"]),
+                                                  int(data["checkOutDate"]["day"]))
+                    stay_duration = (check_out_datetime - check_in_datetime).days
+                    hotel_price = float(hotel["price"])
+                    sum_price = round(stay_duration * hotel_price, 2)
 
-                    caption = f'Название: {hotel["name"]}\n ' \
+                    caption = f'Название: {hotel["name"]}\n' \
                               f'Адрес: {summary_info["address"]}\n' \
-                              f'Стоимость проживания в сутки: {hotel["price"]}\n ' \
-                              f'Расстояние до центра: {round(hotel["distance"], 2)} mile.\n'
+                              f'Стоимость проживания в сутки: {hotel["price"]}\n' \
+                              f'Общая стоимость проживания: {sum_price}\n'\
+                              f'Расстояние до центра: {round(hotel["distance"], 2)} mile.\n' \
+                              f'Ссылка на отель: https://www.hotels.com/h{hotel["id"]}.Hotel-Information\n'
 
                     medias = []
                     links_to_images = []
@@ -123,3 +132,5 @@ def find_and_show_hotels(message: Message, data: Dict) -> None:
     else:
         bot.send_message(message.chat.id, f'Что-то пошло не так, код ошибки: {response_hotels.status_code}')
     bot.send_message(message.chat.id, 'Поиск окончен!')
+
+
